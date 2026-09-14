@@ -4,6 +4,7 @@ import { useSignUp, useAuth } from '@clerk/expo';
 import { useState } from 'react';
 import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
 import { styled } from 'nativewind';
+import { posthog } from '@/lib/posthog';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
@@ -46,6 +47,7 @@ const SignUp = () => {
 
         if (signUp.status === 'complete') {
             await signUp.finalize();
+            posthog?.capture('sign_up_completed');
         }  else {
             console.error('Sign-up attempt not complete:', signUp);
         }
