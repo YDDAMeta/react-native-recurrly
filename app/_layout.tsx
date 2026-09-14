@@ -1,9 +1,11 @@
 import { SplashScreen, Stack } from "expo-router";
 import '@/global.css';
 import { useFonts } from "expo-font";
-import { useEffect } from "react";
-import { ClerkProvider, useAuth } from '@clerk/expo';
+import { useEffect, useRef } from "react";
+import { ClerkProvider, useAuth, useUser } from '@clerk/expo';
 import { tokenCache } from '@clerk/expo/token-cache';
+import { PostHogProvider } from 'posthog-react-native';
+import { posthog } from '@/lib/posthog';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -15,6 +17,8 @@ if (!publishableKey) {
 
 function RootLayoutContent() {
     const { isLoaded: authLoaded } = useAuth();
+    const { user } = useUser();
+    const identifiedUserId = useRef<string | null>(null);
 
     const [fontsLoaded] = useFonts({
         'sans-regular': require('../assets/fonts/PlusJakartaSans-Regular.ttf'),
@@ -32,10 +36,29 @@ function RootLayoutContent() {
         }
     }, [fontsLoaded, authLoaded])
 
+    useEffect(() => {
+        if (!user) {
+            identifiedUserId.current = null;
+            return;
+        }
+
+        if (posthog && identifiedUserId.current !== user.id) {
+            posthog.identify(user.id, {
+                $set: {
+                    email: user.primaryEmailAddress?.emailAddress ?? null,
+                    name: user.fullName ?? null,
+                },
+            });
+            identifiedUserId.current = user.id;
+        }
+    }, [user]);
+
     // Don't render app until both are ready
     if (!fontsLoaded || !authLoaded) return null;
 
-    return <Stack screenOptions={{ headerShown: false }} />;
+    const router = <Stack screenOptions={{ headerShown: false }} />;
+
+    return posthog ? <PostHogProvider client={posthog}>{router}</PostHogProvider> : router;
 }
 
 export default function RootLayout() {

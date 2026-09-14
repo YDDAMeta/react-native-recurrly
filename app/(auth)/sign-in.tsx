@@ -4,6 +4,7 @@ import { useSignIn } from '@clerk/expo';
 import { useState } from 'react';
 import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
 import { styled } from 'nativewind';
+import { posthog } from '@/lib/posthog';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
@@ -37,6 +38,7 @@ const SignIn = () => {
 
         if (signIn.status === 'complete') {
             await signIn.finalize();
+            posthog?.capture('sign_in_completed', { method: 'password' });
         } else {
             console.error('Sign-in attempt not complete:', signIn);
         }
@@ -65,6 +67,7 @@ const SignIn = () => {
                     }
                 },
             });
+            posthog?.capture('sign_in_completed', { method: 'email_code' });
         } else {
             console.error('Sign-in attempt not complete:', signIn);
         }
