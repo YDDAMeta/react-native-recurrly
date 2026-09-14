@@ -12,14 +12,16 @@ interface CreateSubscriptionModalProps {
 }
 
 type Frequency = 'Monthly' | 'Yearly';
-type Category = 'Entertainment' | 'AI Tools' | 'Developer Tools' | 'Design' | 'Productivity' | 'Other';
-const CATEGORIES: Category[] = ['Entertainment', 'AI Tools', 'Developer Tools', 'Design', 'Productivity', 'Other'];
+type Category = 'Entertainment' | 'AI Tools' | 'Developer Tools' | 'Design' | 'Productivity' | 'Cloud' | 'Music' | 'Other';
+const CATEGORIES: Category[] = ['Entertainment', 'AI Tools', 'Developer Tools', 'Design', 'Productivity', 'Cloud', 'Music', 'Other'];
 const CATEGORY_COLORS: Record<Category, string> = {
     'Entertainment': '#ff6b6b',
     'AI Tools': '#b8d4e3',
     'Developer Tools': '#e8def8',
     'Design': '#f5c542',
     'Productivity': '#95e1d3',
+    'Cloud': '#a3c4f3',
+    'Music': '#f4a3c2',
     'Other': '#d4d4d4',
 };
 
@@ -29,11 +31,9 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
     const [frequency, setFrequency] = useState<Frequency>('Monthly');
     const [category, setCategory] = useState<Category>('Other');
 
-    // Improved price validation
     const isValidPrice = () => {
         const trimmedPrice = price.trim();
         if (!trimmedPrice) return false;
-        // Strict numeric pattern check
         if (!/^\s*[+-]?(\d+(\.\d+)?|\.\d+)\s*$/.test(trimmedPrice)) return false;
         const numValue = Number(trimmedPrice);
         return Number.isFinite(numValue) && numValue > 0;
@@ -69,7 +69,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
             subscription_price: priceValue,
             subscription_frequency: frequency,
             subscription_category: category,
-        })
+        });
 
         resetForm();
         onClose();
